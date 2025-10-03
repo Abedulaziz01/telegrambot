@@ -1,14 +1,12 @@
-# registration_bot.py
 import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 import pytz
 
-# Get token from environment variable (use this for deployment)
-# Fallback to your token if running locally
-TOKEN = os.environ.get("BOT_TOKEN", "8487849656:AAGAPSdlqD9sBfpRB4PFi4WAxEr3bD4w5f0")
+# Bot Token
+TOKEN = "8487849656:AAGAPSdlqD9sBfpRB4PFi4WAxEr3bD4w5f0"
 
-# Long instruction steps with images
+# Instruction steps with images
 steps = [
     {
         "text": """👋 Step 1: Welcome to the bot! 
@@ -44,40 +42,77 @@ Now you are on Step 4. 🎉 You have completed all instructions!""",
     }
 ]
 
+# ================= Handlers =================
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Start the bot by sending Step 1 as a photo + text."""
-    await update.message.reply_photo(
-        photo=steps[0]["image"],
-        caption=steps[0]["text"],
+    """Send Welcome Message before Step 1."""
+    welcome_text = """🌟 **Welcome to the Registration Bot!** 🌟
+
+🙌 *We’re excited to have you here!*  
+This bot is your **interactive guide**, designed to make learning **fun and simple**.  
+
+💡 **Here’s what you’ll get:**  
+- 📖 Clear **step-by-step instructions**  
+- 🖼️ Helpful **images & visuals**  
+- 🔄 The power to **restart anytime**  
+- 🚀 A smooth and engaging journey  
+
+✨ *Pro Tip:* Take your time at each step, no need to rush.  
+At the end, you’ll feel **confident and ready** 🎉  
+
+👉 Press the button below to begin your journey 👇  
+"""
+
+    await update.message.reply_text(
+        welcome_text,
+        parse_mode="Markdown",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("➡️ Next", callback_data="1")]
+            [InlineKeyboardButton("🚀 Start Guide ✨", callback_data="0")]
         ])
     )
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle Next and Restart buttons."""
     query = update.callback_query
     await query.answer()
     step = query.data
 
     if step == "restart":
-        await query.message.reply_photo(
-            photo=steps[0]["image"],
-            caption=steps[0]["text"],
+        # Restart from Welcome screen
+        welcome_text = """🌟 **Welcome to the Registration Bot!** 🌟
+
+🙌 *We’re excited to have you here!*  
+This bot is your **interactive guide**, designed to make learning **fun and simple**.  
+
+💡 **Here’s what you’ll get:**  
+- 📖 Clear **step-by-step instructions**  
+- 🖼️ Helpful **images & visuals**  
+- 🔄 The power to **restart anytime**  
+- 🚀 A smooth and engaging journey  
+
+👉 Press the button below to begin your journey 👇  
+"""
+        await query.message.reply_text(
+            welcome_text,
+            parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("➡️ Next", callback_data="1")]
+                [InlineKeyboardButton("🚀 Start Guide ✨", callback_data="0")]
             ])
         )
         return
 
     step_index = int(step)
     if step_index < len(steps):
+        # Side-by-side buttons
         if step_index + 1 < len(steps):
             buttons = [
-                [InlineKeyboardButton("➡️ Next", callback_data=str(step_index + 1))],
-                [InlineKeyboardButton("🔄 Restart", callback_data="restart")]
+                [
+                    InlineKeyboardButton("➡️ Next Step ✨", callback_data=str(step_index + 1)),
+                    InlineKeyboardButton("🔄 Restart 🔥", callback_data="restart")
+                ]
             ]
         else:
-            buttons = [[InlineKeyboardButton("🔄 Restart", callback_data="restart")]]
+            buttons = [[InlineKeyboardButton("🔄 Restart 🔥", callback_data="restart")]]
 
         await query.message.reply_photo(
             photo=steps[step_index]["image"],
@@ -86,14 +121,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
-    tz = pytz.timezone("Africa/Addis_Ababa")
     app = Application.builder().token(TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("Instruction bot with images started...")
+    print("Bot started...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
+##last

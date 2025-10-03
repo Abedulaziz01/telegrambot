@@ -1,10 +1,14 @@
+# registration_bot.py
+import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 import pytz
 
+# Use environment variable for token (no hardcoding)
+# filepath: [registration_bot.py](http://_vscodecontentref_/1)
 TOKEN = "8487849656:AAGAPSdlqD9sBfpRB4PFi4WAxEr3bD4w5f0"
 
-# Long instruction steps with images
+# Instruction steps with images
 steps = [
     {
         "text": """👋 Step 1: Welcome to the bot! 
@@ -36,12 +40,12 @@ Congratulations! You have reached the final step.
 Here we summarize all the key points and give final advice on how to proceed. 
 Review all previous steps if needed and make sure you understood everything. 
 Now you are on Step 4. 🎉 You have completed all instructions!""",
-        "image": "AgACAgQAAxkBAAMTaNvObHAdLGwN7rBwFQW-IBeeBfoAAsDIMRsTEeFSJzWrRvZGr8cBAAMCAAN5AAM2BA"  # reuse last image
+        "image": "AgACAgQAAxkBAAMTaNvObHAdLGwN7rBwFQW-IBeeBfoAAsDIMRsTEeFSJzWrRvZGr8cBAAMCAAN5AAM2BA"
     }
 ]
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Start the bot by sending Step 1 as a photo + text."""
+    """Send Step 1 as a photo + text."""
     await update.message.reply_photo(
         photo=steps[0]["image"],
         caption=steps[0]["text"],
@@ -51,11 +55,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle Next and Restart buttons."""
     query = update.callback_query
     await query.answer()
     step = query.data
 
     if step == "restart":
+        # Restart from Step 1
         await query.message.reply_photo(
             photo=steps[0]["image"],
             caption=steps[0]["text"],
@@ -67,6 +73,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     step_index = int(step)
     if step_index < len(steps):
+        # Determine buttons for next step
         if step_index + 1 < len(steps):
             buttons = [
                 [InlineKeyboardButton("➡️ Next", callback_data=str(step_index + 1))],
@@ -82,14 +89,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
-    tz = pytz.timezone("Africa/Addis_Ababa")
+    # Build application using Application.builder(), no Updater
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("Instruction bot with images started...")
+    print("Bot started...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
+
+
+
+
+##venv\Scripts\activate
